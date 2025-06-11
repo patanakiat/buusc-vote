@@ -1,25 +1,32 @@
-import logo from './logo.svg';
-import './App.css';
+import { Routes, Route } from "react-router-dom";
+import { AuthProvider, RequireAuth } from "./contexts/AuthContext";
+import Login   from "./components/Auth/Login";
+import Register from "./components/Auth/Register";
+import Forgot   from "./components/Auth/ForgotPassword";
+import Reset    from "./components/Auth/ResetPassword";
+import Dashboard from "./pages/Dashboard";
 
-function App() {
+export default function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <AuthProvider>
+      <Routes>
+        <Route path="/" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/forgot" element={<Forgot />} />
+        <Route path="/reset/:token" element={<Reset />} />
+
+        {/* protected */}
+        <Route
+          path="/dashboard"
+          element={
+            <RequireAuth>
+              <Dashboard />
+            </RequireAuth>
+          }
+        />
+
+        <Route path="*" element={<h2 className="text-center mt-20">404</h2>} />
+      </Routes>
+    </AuthProvider>
   );
 }
-
-export default App;
