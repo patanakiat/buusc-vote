@@ -18,7 +18,7 @@ export default function ResetPassword() {
   return (
     <CenterPage>
       <form onSubmit={submit} className="card">
-        <img src={logo} alt="BUU" className="w-36 mx-auto -mt-6 mb-2 animate-fade" />
+        <img src={logo} alt="BUU" className="w-28 mx-auto block -mt-8" />
         <h1 className="text-2xl font-bold text-center animate-fade">ตั้งรหัสผ่านใหม่</h1>
 
         {done ? (

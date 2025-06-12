@@ -1,3 +1,7 @@
+/*  Burapha University SC – Register page
+    • verifies mail prefix === studentId
+    • sends verify-mail on success (handled in AuthContext)
+*/
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import CenterPage from "../Layout/CenterPage";
@@ -6,99 +10,100 @@ import logo from "../../img/buu.png";
 
 export default function Register() {
   const { register } = useAuth();
-  const navigate     = useNavigate();
+  const nav = useNavigate();
 
-  const [f, set]      = useState({
-    nameSurname:"", studentId:"", username:"", email:"", pwd:"", confirm:""
+  const [form, set] = useState({
+    nameSurname: "",
+    studentId  : "",
+    username   : "",
+    email      : "",
+    pwd        : "",
+    confirm    : ""
   });
-  const [msg, setMsg] = useState(null);
-  const [count,setCount] = useState(3);
+  const [msg,   setMsg] = useState("");
+  const [cnt,   setCnt] = useState(5);
+  const [busy,  setBusy]= useState(false);
 
-  /* regex rules */
-  const studentIdRx = /^(64|65|66|67|68|69|70)\d{6}$/;
-  const usernameRx  = /^[A-Za-z0-9]+$/;
-  const emailRx     = /^[\w.+-]+@go\.buu\.ac\.th$/;
+  /* regex */
+  const idRx   = /^(64|65|66|67|68|69|70)\d{6}$/;
+  const userRx = /^[A-Za-z0-9]+$/;
+  const mailRx = /^[\w.+-]+@go\.buu\.ac\.th$/;
 
-  async function handleSubmit(e){
+  async function handleSubmit(e) {
     e.preventDefault();
 
-    if (!f.nameSurname.includes(" "))
+    /* ---- client-side validation ---- */
+    if (!form.nameSurname.includes(" "))
       return setMsg("กรุณากรอกชื่อจริงและนามสกุลโดยเว้นวรรคระหว่างกัน");
-    if (!studentIdRx.test(f.studentId))
+    if (!idRx.test(form.studentId))
       return setMsg("รหัสนิสิตต้องเป็น 8 หลักและขึ้นต้นด้วย 64-70");
-    if (!usernameRx.test(f.username))
+    if (!userRx.test(form.username))
       return setMsg("ชื่อผู้ใช้ใช้ตัวอักษรอังกฤษหรือตัวเลขเท่านั้น");
-    if (!emailRx.test(f.email))
+    if (!mailRx.test(form.email))
       return setMsg("ใช้อีเมล @go.buu.ac.th เท่านั้น");
-    if (f.pwd !== f.confirm)
+
+    /* NEW: e-mail prefix must match student-ID */
+    const prefix = form.email.split("@")[0];
+    if (prefix !== form.studentId)
+      return setMsg("อีเมลต้องตรงกับรหัสนิสิต");
+
+    if (form.pwd !== form.confirm)
       return setMsg("รหัสผ่านไม่ตรงกัน");
 
-    const { ok, msg:errMsg } = await register({
-      nameSurname: f.nameSurname,
-      studentId:   f.studentId,
-      username:    f.username,
-      email:       f.email,
-      password:    f.pwd
+    /* ---- Firebase ---- */
+    setBusy(true);
+    const { ok, msg: err } = await register({
+      nameSurname: form.nameSurname,
+      studentId  : form.studentId,
+      username   : form.username,
+      email      : form.email,
+      password   : form.pwd
     });
-    if (!ok) return setMsg(errMsg);
+    setBusy(false);
 
-    setMsg("สมัครสำเร็จ! จะกลับสู่หน้าเข้าสู่ระบบใน 3 วินาที...");
-    const id = setInterval(()=>setCount(c=>c-1),1_000);
-    setTimeout(()=>{ clearInterval(id); navigate("/"); },3_000);
+    if (!ok) return setMsg(err);
+
+    /* ---- success banner ---- */
+    setMsg(`สมัครสำเร็จ! ระบบได้ส่งอีเมลยืนยันแล้ว 
+            จะกลับสู่หน้าเข้าสู่ระบบใน ${cnt} วินาที…`);
+    const t = setInterval(()=>setCnt(c=>c-1),1000);
+    setTimeout(()=>{ clearInterval(t); nav("/"); },5000);
   }
 
   return (
     <CenterPage>
-      <form onSubmit={handleSubmit} className="card">
-        <img src={logo} alt="BUU" className="w-36 mx-auto -mt-6 mb-2 animate-fade" />
-        <h1 className="text-3xl font-bold text-center animate-fade">สมัครสมาชิก</h1>
+      <form onSubmit={handleSubmit} className="card space-y-6">
+        <img src={logo} alt="BUU" className="w-28 mx-auto block -mt-8"/>
+        <h1 className="text-3xl font-bold text-center">สมัครสมาชิก</h1>
 
-        {msg && <p className="text-center text-green-600">{msg.replace("3",count)}</p>}
+        {msg && (
+          <p className={`text-center text-sm ${msg.startsWith("สมัครสำเร็จ")?"text-green-600":"text-red-600"}`}>
+            {msg.replace(cnt+1+"",cnt+"")}
+          </p>
+        )}
 
-        <input
-          placeholder="ชื่อจริง - นามสกุล"
-          className="input input-bordered w-full"
-          required
-          onChange={e=>set({...f,nameSurname:e.target.value})}
-        />
-        <input
-          placeholder="รหัสนิสิต (8 หลักขึ้นต้น 64-70)"
-          className="input input-bordered w-full"
-          required maxLength={8}
-          onChange={e=>set({...f,studentId:e.target.value})}
-        />
-        <input
-          placeholder="ชื่อผู้ใช้ (A-Z / 0-9)"
-          className="input input-bordered w-full"
-          required
-          onChange={e=>set({...f,username:e.target.value})}
-        />
-        <input
-          type="email"
-          placeholder="อีเมล (@go.buu.ac.th)"
-          className="input input-bordered w-full"
-          pattern="^[\w.+-]+@go\.buu\.ac\.th$"
-          title="ต้องใช้อีเมล @go.buu.ac.th"
-          required
-          onChange={e=>set({...f,email:e.target.value})}
-        />
-        <input
-          type="password"
-          placeholder="รหัสผ่าน"
-          className="input input-bordered w-full"
-          required
-          onChange={e=>set({...f,pwd:e.target.value})}
-        />
-        <input
-          type="password"
-          placeholder="ยืนยันรหัสผ่าน"
-          className="input input-bordered w-full"
-          required
-          onChange={e=>set({...f,confirm:e.target.value})}
-        />
+        <input className="input input-bordered w-full" placeholder="ชื่อจริง - นามสกุล"
+               required onChange={e=>set({...form,nameSurname:e.target.value})}/>
 
-        <button className="w-full py-2 rounded-lg bg-primary text-white hover:bg-primary/90 transition">
-          สมัครสมาชิก
+        <input className="input input-bordered w-full" placeholder="รหัสนิสิต"
+               maxLength={8} required onChange={e=>set({...form,studentId:e.target.value})}/>
+
+        <input className="input input-bordered w-full" placeholder="ชื่อผู้ใช้"
+               required onChange={e=>set({...form,username:e.target.value})}/>
+
+        <input type="email" className="input input-bordered w-full"
+               placeholder="อีเมล (@go.buu.ac.th)" pattern={mailRx.source}
+               required onChange={e=>set({...form,email:e.target.value})}/>
+
+        <input type="password" className="input input-bordered w-full"
+               placeholder="รหัสผ่าน" required onChange={e=>set({...form,pwd:e.target.value})}/>
+
+        <input type="password" className="input input-bordered w-full"
+               placeholder="ยืนยันรหัสผ่าน" required onChange={e=>set({...form,confirm:e.target.value})}/>
+
+        <button disabled={busy}
+                className="w-full py-2 rounded-lg bg-primary text-white hover:bg-primary/90 disabled:opacity-50">
+          {busy ? "กำลังสมัคร…" : "สมัครสมาชิก"}
         </button>
 
         <div className="flex justify-center gap-6 text-sm">

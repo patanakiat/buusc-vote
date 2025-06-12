@@ -1,7 +1,11 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
+@layer base {
+  img {
+    @apply inline-block;
+  }
+}
 /* global bg */
 body{
   @apply bg-gradient-to-br from-primary/10 via-white to-accent/20
@@ -15,6 +19,24 @@ body{
 
 /* reusable auth “card” */
 .card{
- @apply w-full sm:max-w-sm backdrop-blur-md bg-white/80
-        rounded-xl shadow-xl px-8 py-10 space-y-6 animate-up;
+  /* phones (≤ 639 px) get full-width card + 1 rem side-padding  */
+  @apply w-full max-w-xs px-4
+
+  /* ≥ 640 px  ─ allow the element to size itself (width:auto)
+                but keep a moderate cap + larger padding         */
+         sm:w-auto sm:max-w-sm sm:px-6
+
+  /* ≥ 768 px  ─ laptop-tablet cap                               */
+         md:max-w-md
+
+  /* ≥ 1024 px ─ desktop cap (unchanged look on PC)              */
+         lg:max-w-lg
+
+  /* visual styling (unchanged)                                  */
+         py-10 space-y-6 rounded-xl shadow-xl
+         backdrop-blur-md bg-white/80 animate-up;
+}
+
+.html2canvas-container * {
+  box-sizing: border-box !important;
 }
