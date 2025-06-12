@@ -11,18 +11,17 @@ export default function ForgotPassword() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    try {
-      await sendPasswordResetEmail(auth, email);
-    } catch (err) {
-      console.error(err);            // keep quiet for privacy
-    }
-    setSent(true);                   // show the same notice either way
+    try { await sendPasswordResetEmail(auth, email); } catch (_) {}
+    setSent(true);
   }
 
   return (
     <CenterPage>
-      <form onSubmit={handleSubmit} className="card space-y-6">
-        <img src={logo} alt="BUU" className="w-28 mx-auto block -mt-8" />
+      <form onSubmit={handleSubmit}
+            className="w-full max-w-sm mx-auto bg-white rounded-2xl shadow-xl
+                       px-6 py-8 space-y-6">
+
+        <img src={logo} alt="BUU" className="w-28 mx-auto block -mt-1" />
         <h1 className="text-2xl font-bold text-center">รีเซ็ตรหัสผ่าน</h1>
 
         {sent ? (
@@ -31,16 +30,11 @@ export default function ForgotPassword() {
           </p>
         ) : (
           <>
-            <input
-              type="email"
-              placeholder="อีเมล"
-              required
-              className="input input-bordered w-full"
-              onChange={(e) => setEmail(e.target.value)}
-            />
+            <input type="email" placeholder="อีเมล" required
+                   className="input input-bordered w-full"
+                   onChange={e=>setEmail(e.target.value)}/>
             <button
-              className="w-full py-2 rounded-lg bg-primary text-white hover:bg-primary/90 transition"
-            >
+              className="w-full py-2 rounded-lg bg-primary text-white hover:bg-primary/90 transition">
               ส่งลิงก์
             </button>
           </>
