@@ -1,11 +1,20 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
 @layer base {
   img {
     @apply inline-block;
   }
+  
+  /* Reset all margins and padding */
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    height: 100%;
+  }
 }
+
 /* global bg */
 body{
   @apply bg-gradient-to-br from-primary/10 via-white to-accent/20
@@ -17,26 +26,34 @@ body{
   @apply rounded-lg;
 }
 
-/* reusable auth “card” */
+/* reusable auth "card" */
 .card{
-  /* phones (≤ 639 px) get full-width card + 1 rem side-padding  */
   @apply w-full max-w-xs px-4
-
-  /* ≥ 640 px  ─ allow the element to size itself (width:auto)
-                but keep a moderate cap + larger padding         */
          sm:w-auto sm:max-w-sm sm:px-6
-
-  /* ≥ 768 px  ─ laptop-tablet cap                               */
          md:max-w-md
-
-  /* ≥ 1024 px ─ desktop cap (unchanged look on PC)              */
          lg:max-w-lg
-
-  /* visual styling (unchanged)                                  */
          py-10 space-y-6 rounded-xl shadow-xl
          backdrop-blur-md bg-white/80 animate-up;
 }
 
 .html2canvas-container * {
   box-sizing: border-box !important;
+}
+
+.scrollbar-hide::-webkit-scrollbar { display:none }
+.scrollbar-hide { -ms-overflow-style:none; scrollbar-width:none }
+
+/* Modal overlay fix */
+.modal-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  z-index: 9999 !important;
+  background: rgba(0, 0, 0, 0.5) !important;
 }
